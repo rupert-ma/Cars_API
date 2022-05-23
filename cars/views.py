@@ -1,4 +1,4 @@
-from re import T
+from django.shortcuts import get_object_or_404
 from django.http import Http404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -26,12 +26,19 @@ def cars_list(request):
 #            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
-@api_view(['GET'])        
+@api_view(['GET', 'PUT'])        
 def car_detail(request, pk):
-    try:
-        car = Car.objects.get(pk = pk)
+    car = get_object_or_404(Car, pk=pk)
+    if request.method == 'GET':
+    #  try:         ---again shortened code replaces try except
+            #car = Car.objects.get(pk = pk)
         serializer = CarSerializer(car)
         return Response(serializer.data)
-    except Car.DoesNotExist:
-        return Response(status.HTTP_404_NOT_FOUND)
+    #  except Car.DoesNotExist:
+    #     return Response(status.HTTP_404_NOT_FOUND)
+    elif request.method == 'PUT':
+        serializer = CarSerializer(car, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
   
